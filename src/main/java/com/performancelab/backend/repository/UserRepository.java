@@ -1,0 +1,7 @@
+package com.performancelab.backend.repository;
+
+import com.performancelab.backend.entity.User;
+import org.springframework.data.jpa.repository.JpaRepository;
+
+public interface UserRepository extends JpaRepository<User, Long> {
+}
