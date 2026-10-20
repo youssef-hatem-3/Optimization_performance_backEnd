@@ -1,12 +1,10 @@
 
 package com.performancelab.backend.service;
-import org.springframework.http.HttpStatus;
-import org.springframework.web.server.ResponseStatusException;
-
 import com.performancelab.backend.dto.AddressDto;
 import com.performancelab.backend.dto.UserDto;
 import com.performancelab.backend.dto.UpdateUserRequest;
 import com.performancelab.backend.entity.User;
+import com.performancelab.backend.exception.UserNotFoundException;
 import com.performancelab.backend.repository.UserRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -75,10 +73,7 @@ public class UserService {
 
         User user = userRepository.findById(id)
                 .orElseThrow(() ->
-                        new ResponseStatusException(
-                                HttpStatus.NOT_FOUND,
-                                "User not found"
-                        )
+                        new UserNotFoundException(id)
                 );
 
         return toDto(user);
@@ -87,10 +82,7 @@ public class UserService {
     @Transactional
     public UserDto updateUser(Long id, UpdateUserRequest request) {
         User user = userRepository.findById(id)
-                .orElseThrow(() -> new ResponseStatusException(
-                        HttpStatus.NOT_FOUND,
-                        "User not found"
-                ));
+                .orElseThrow(() -> new UserNotFoundException(id));
 
         user.setFirstName(request.getFirstName());
         user.setLastName(request.getLastName());
@@ -102,5 +94,15 @@ public class UserService {
         return toDto(user);
     }
 
+    @Transactional
+    public void deleteUser(Long id) {
+
+        User user = userRepository.findById(id)
+                .orElseThrow(() ->
+                        new UserNotFoundException(id)
+                );
+
+        userRepository.delete(user);
+    }
 
 }
