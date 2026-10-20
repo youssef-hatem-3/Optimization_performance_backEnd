@@ -1,11 +1,11 @@
 
 package com.performancelab.backend.controller;
 
+import com.performancelab.backend.dto.UpdateUserRequest;
 import com.performancelab.backend.service.UserService;
 import com.performancelab.backend.dto.UserDto;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RestController;
+import jakarta.validation.Valid;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.http.ResponseEntity;
 
 import java.util.List;
@@ -13,8 +13,6 @@ import java.util.Map;
 import com.performancelab.backend.dto.CreateUserRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 
 @RestController
 public class UserController {
@@ -44,15 +42,14 @@ public class UserController {
     }
 
     @GetMapping("/users/{id}")
-    public ResponseEntity<UserDto> getUserById(@PathVariable Long id) {
-        return userService.getUserById(id)
-                .map(ResponseEntity::ok)
-                .orElseGet(() -> ResponseEntity.notFound().build());
+    public UserDto getUserById(@PathVariable Long id) {
+        return userService.getUserById(id);
     }
+
 
     @PostMapping("/users")
     public ResponseEntity<UserDto> createUser(
-            @RequestBody CreateUserRequest request
+            @Valid @RequestBody CreateUserRequest request
     ) {
         UserDto createdUser = userService.createUser(request);
 
@@ -60,6 +57,15 @@ public class UserController {
                 .status(HttpStatus.CREATED)
                 .body(createdUser);
     }
+
+    @PutMapping("/users/{id}")
+    public UserDto updateUser(
+            @PathVariable Long id,
+            @Valid @RequestBody UpdateUserRequest request
+    ) {
+        return userService.updateUser(id, request);
+    }
+
 
 }
 

@@ -1,12 +1,18 @@
 
 package com.performancelab.backend.service;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.server.ResponseStatusException;
 
 import com.performancelab.backend.dto.AddressDto;
 import com.performancelab.backend.dto.UserDto;
+import com.performancelab.backend.dto.UpdateUserRequest;
 import com.performancelab.backend.entity.User;
 import com.performancelab.backend.repository.UserRepository;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import com.performancelab.backend.dto.CreateUserRequest;
+import com.performancelab.backend.dto.UpdateUserRequest;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
@@ -29,10 +35,6 @@ public class UserService {
 
     public long countUsers() {
         return userRepository.count();
-    }
-
-    public Optional<UserDto> getUserById(Long id) {
-        return userRepository.findById(id).map(this::toDto);
     }
 
     private UserDto toDto(User user) {
@@ -66,6 +68,38 @@ public class UserService {
         User savedUser = userRepository.save(user);
 
         return toDto(savedUser);
+    }
+
+
+    public UserDto getUserById(Long id) {
+
+        User user = userRepository.findById(id)
+                .orElseThrow(() ->
+                        new ResponseStatusException(
+                                HttpStatus.NOT_FOUND,
+                                "User not found"
+                        )
+                );
+
+        return toDto(user);
+    }
+
+    @Transactional
+    public UserDto updateUser(Long id, UpdateUserRequest request) {
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND,
+                        "User not found"
+                ));
+
+        user.setFirstName(request.getFirstName());
+        user.setLastName(request.getLastName());
+        user.setEmail(request.getEmail());
+        user.setAge(request.getAge());
+        user.setRole(request.getRole());
+        user.setCountry(request.getCountry());
+
+        return toDto(user);
     }
 
 
