@@ -4,6 +4,7 @@ import com.performancelab.backend.dto.AddressDto;
 import com.performancelab.backend.dto.UserDto;
 import com.performancelab.backend.dto.UpdateUserRequest;
 import com.performancelab.backend.entity.User;
+import com.performancelab.backend.exception.EmailAlreadyExistsException;
 import com.performancelab.backend.exception.UserNotFoundException;
 import com.performancelab.backend.repository.UserRepository;
 import org.springframework.stereotype.Service;
@@ -52,7 +53,14 @@ public class UserService {
     }
 
 
+
     public UserDto createUser(CreateUserRequest request) {
+
+        if (userRepository.existsByEmail(request.email())) {
+            throw new EmailAlreadyExistsException(
+                    request.email()
+            );
+        }
 
         User user = new User(
                 request.firstName(),
@@ -67,7 +75,6 @@ public class UserService {
 
         return toDto(savedUser);
     }
-
 
     public UserDto getUserById(Long id) {
 
