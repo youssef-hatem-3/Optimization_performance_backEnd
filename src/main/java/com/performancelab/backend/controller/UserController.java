@@ -1,6 +1,7 @@
 
 package com.performancelab.backend.controller;
 
+import com.performancelab.backend.dto.PagedUsersResponse;
 import com.performancelab.backend.dto.UpdateUserRequest;
 import com.performancelab.backend.service.UserService;
 import com.performancelab.backend.dto.UserDto;
@@ -74,6 +75,14 @@ public class UserController {
         userService.deleteUser(id);
 
         return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/users/paged")
+    public PagedUsersResponse getUsersPaginated(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size
+    ) {
+        return userService.getUsersPaginated(page, size);
     }
 
 

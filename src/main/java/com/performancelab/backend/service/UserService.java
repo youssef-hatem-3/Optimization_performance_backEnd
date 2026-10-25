@@ -12,6 +12,11 @@ import org.springframework.transaction.annotation.Transactional;
 import com.performancelab.backend.dto.CreateUserRequest;
 import com.performancelab.backend.dto.UpdateUserRequest;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.PageRequest;
+import com.performancelab.backend.dto.PagedUsersResponse;
+import org.springframework.data.domain.Sort;
 
 import java.util.List;
 import java.util.Optional;
@@ -111,5 +116,32 @@ public class UserService {
 
         userRepository.delete(user);
     }
+
+
+    public PagedUsersResponse getUsersPaginated(
+            int page,
+            int size
+    ) {
+        Pageable pageable = PageRequest.of(page, size);
+
+        Page<User> usersPage =
+                userRepository.findAll(pageable);
+
+        List<UserDto> users = usersPage
+                .getContent()
+                .stream()
+                .map(user -> toDto(user))
+                .toList();
+
+        return new PagedUsersResponse(
+                users,
+                usersPage.getTotalElements(),
+                usersPage.getNumber(),
+                usersPage.getSize(),
+                usersPage.getTotalPages(),
+                usersPage.hasNext()
+        );
+    }
+
 
 }
