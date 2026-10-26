@@ -7,6 +7,7 @@ import com.performancelab.backend.entity.User;
 import com.performancelab.backend.exception.EmailAlreadyExistsException;
 import com.performancelab.backend.exception.UserNotFoundException;
 import com.performancelab.backend.repository.UserRepository;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import com.performancelab.backend.dto.CreateUserRequest;
@@ -17,6 +18,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.PageRequest;
 import com.performancelab.backend.dto.PagedUsersResponse;
 import org.springframework.data.domain.Sort;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 import java.util.Optional;
@@ -118,23 +120,70 @@ public class UserService {
     }
 
 
+
     public PagedUsersResponse getUsersPaginated(
             int page,
-            int size
-    ) {
-        Pageable pageable = PageRequest.of(page, size);
+            int size,
+            String sortBy,
+            String direction,
+            String search
+    ){
+        if (page < 0 || size < 1 || size > 100) {
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "Invalid page or size"
+            );
+        }
 
-        Page<User> usersPage =
-                userRepository.findAll(pageable);
+        Boolean sortByList = List.of("id", "firstName", "age", "email").contains(sortBy) ;
 
-        List<UserDto> users = usersPage
-                .getContent()
-                .stream()
-                .map(user -> toDto(user))
-                .toList();
+        if (!sortByList) {
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "Unsupported sort field"
+            );
+        }
+
+        Sort.Direction sortDirection;
+
+        try {
+            sortDirection = Sort.Direction
+                    .fromString(direction);
+        } catch (IllegalArgumentException ex) {
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "Direction must be asc or desc"
+            );
+        }
+
+        Sort sort = Sort.by(sortDirection, sortBy);
+
+        if (!sortBy.equals("id")) {
+            sort = sort.and(Sort.by("id"));
+        }
+
+        Pageable pageable = PageRequest.of(
+                page,
+                size,
+                sort
+        );
+
+
+        Page<User> usersPage;
+
+        if (search == null || search.isBlank()) {
+            usersPage = userRepository.findAll(pageable);
+        } else {
+            usersPage =
+                    userRepository.findByFirstNameContainingIgnoreCase(
+                            search.trim(),
+                            pageable
+                    );
+        }
+
 
         return new PagedUsersResponse(
-                users,
+                usersPage.map(this::toDto).getContent(),
                 usersPage.getTotalElements(),
                 usersPage.getNumber(),
                 usersPage.getSize(),
@@ -142,6 +191,7 @@ public class UserService {
                 usersPage.hasNext()
         );
     }
+
 
 
 }

@@ -16,6 +16,10 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
 @RestController
+@CrossOrigin(origins = {
+        "http://localhost:3000",
+        "http://localhost:5173"
+})
 public class UserController {
 
     private final UserService userService;
@@ -77,14 +81,26 @@ public class UserController {
         return ResponseEntity.noContent().build();
     }
 
+
+
     @GetMapping("/users/paged")
     public PagedUsersResponse getUsersPaginated(
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "id") String sortBy,
+            @RequestParam(defaultValue = "asc") String direction,
+            @RequestParam(defaultValue = "") String search
     ) {
-        return userService.getUsersPaginated(page, size);
+        return userService.getUsersPaginated(
+                page,
+                size,
+                sortBy,
+                direction,
+                search
+        );
     }
 
 
-}
 
+
+}

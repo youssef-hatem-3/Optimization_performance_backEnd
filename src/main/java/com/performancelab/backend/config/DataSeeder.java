@@ -29,6 +29,23 @@ public class DataSeeder {
                         )
                 );
             }
+
+            for (int i = 3; i <= 32; i++) {
+                String email = "user" + i + "@example.com";
+
+                if (!repository.existsByEmail(email)) {
+                    repository.save(
+                            new User(
+                                    "FirstName" + i,
+                                    "LastName" + i,
+                                    email,
+                                    20 + (i % 30),
+                                    "user",
+                                    "Egypt"
+                            )
+                    );
+                }
+            }
         };
     }
 }
